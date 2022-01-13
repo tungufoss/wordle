@@ -78,9 +78,29 @@ def process(language, word_length = 5,  not_contains_letters = list(), letter_at
     print("\n".join([f'{color_word(key)}\t{value}' for key,value in glance(values, max_show).items()]))    
     if(len(values)>max_show):
         print(f'\ttruncated {len(values)-max_show} values')
-           
-process('EN', 5,
+
+def wordle():
+    # https://www.powerlanguage.co.uk/wordle/
+    process('EN', 5,
         not_contains_letters=[],
         letter_at_pos = [None,None,None,None,None],
         letters_not_at_pos = [[],[],[],[],[]]
-        )
+    )
+
+def ordla(): 
+    # https://torfbaer.itch.io/ordla?secret=tAAEeMtlFSHv4FJo8eTn6cfyd2M
+    process('IS', 5,
+        not_contains_letters=[],
+        letter_at_pos = [None,None,None,None,None],
+        letters_not_at_pos = [[],[],[],[],[]]
+    )
+
+def absurdle():
+    # https://qntm.org/files/wordle/index.html
+    process('EN', 7,
+        not_contains_letters=[],
+        letter_at_pos = [None,None,None,None,None,None,None],
+        letters_not_at_pos = [[],[],[],[],[],[],[]]
+    )
+    
+wordle()
