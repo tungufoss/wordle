@@ -107,14 +107,14 @@ def process(word_length, words, not_contains_letters = list(), letter_at_pos = [
         if(len(values)>max_show):
             print(f'\ttruncated {len(values)-max_show} values')
     
-    return values, positional_freq
+    return values, overall_freq, positional_freq
 
 def candidate_words(letters, word_length, words):
     complement = dict()
     for i in reversed(range(1,min(word_length,len(letters))+1)):
         subsets = all_subsets_of_length(set(letters),i)        
         for subset in subsets:            
-            aux, aux_freq = process(word_length, words, max_show=1, print_out=False, must_contain=subset)            
+            aux, aux_freq_overall, aux_freq_pos = process(word_length, words, max_show=1, print_out=False, must_contain=subset)            
             if len(aux)>0:                
                 aux_word = list(aux.keys())[0]
                 complement[aux_word] = aux[aux_word]                
@@ -131,7 +131,7 @@ def complement_words(word_length, words, not_contains_letters, letter_at_pos, le
         for i in reversed(range(1,word_length+1)):
             subsets = all_subsets_of_length(set(list(word)),i)
             for subset in subsets:                
-                aux, aux_freq = process(word_length, words, set(not_contains_letters+subset), letter_at_pos, letters_not_at_pos, 1, print_out=False)
+                aux, aux_freq_overall, aux_freq_pos = process(word_length, words, set(not_contains_letters+subset), letter_at_pos, letters_not_at_pos, 1, print_out=False)
                 if len(aux)>0:                
                     aux_word = list(aux.keys())[0]
                     complement[aux_word] = aux[aux_word]
@@ -160,17 +160,19 @@ def ordla(lang='IS',word_length=5):
         letters_not_at_pos = [[],[],[],[],[]]
     )
 
-def absurdle(lang='EN', word_length=5, max_show=15):
+def absurdle(lang='EN', word_length=5, max_show=25):
     # https://qntm.org/files/wordle/index.html
-    not_contains_letters=[]
-    letter_at_pos = [None,None,None,None,None]
-    letters_not_at_pos = [[],[],[],[],[]]
+    not_contains_letters=['A','R','O','S','U','T','N','C']
+    letter_at_pos = ['W',None,'I','L','E']
+    letters_not_at_pos = [[],['E'],[],[],['H']]
     all_words = read_language(lang, word_length)
-    words, freq_positional = process(word_length, all_words, not_contains_letters, letter_at_pos, letters_not_at_pos, max_show, print_out=True)
-    candidates = complement_words(word_length, glance(words,max_show), not_contains_letters, letter_at_pos, letters_not_at_pos)
+    words, freq_overall, freq_positional = process(word_length, all_words, not_contains_letters, letter_at_pos, letters_not_at_pos, max_show, print_out=True)
+    candidates = complement_words(word_length, glance(words,15), not_contains_letters, letter_at_pos, letters_not_at_pos)
     print("\n".join([ f'{key}+{value[1]}={value[0]}' for key,value in candidates.items()]))
     
-    unknowns = list()
+    
+    print('Illegal words with additional information:')
+    unknowns = dict()
     for i in range(word_length):
         possibilities_at_pos = freq_positional[i].keys()        
         if len(possibilities_at_pos)==1:            
@@ -178,12 +180,12 @@ def absurdle(lang='EN', word_length=5, max_show=15):
         else : 
             for key in freq_positional[i].keys():
                 if key not in unknowns:
-                    unknowns.append(key)
-                    
-    if len(unknowns)<=10:        
-        process(word_length, words, not_contains_letters, letter_at_pos, letters_not_at_pos, max_show, print_out=True)
-        words = candidate_words(unknowns, word_length, all_words)
-        print('\nIllegal words with additional information:')        
-        print('\n'.join([f'{color_word(word, letter_at_pos, unknowns)}: {value}' for word,value in words.items()]))
+                    unknowns[key]=freq_overall[key]
+    unknowns = order_dict(unknowns)
+    print(unknowns,len(unknowns))
+    unknowns = list(unknowns.keys())[0:10]
+    words = candidate_words(unknowns, word_length, all_words)
+    words = glance(words,10)
+    print('\n'.join([f'{color_word(word, letter_at_pos, unknowns)}: {value}' for word,value in words.items()]))
             
 absurdle()
