@@ -1,5 +1,6 @@
 # importing the collections module
 import collections
+import os.path
 from itertools import chain, combinations
 
 class color:
@@ -52,7 +53,9 @@ def order_dict(d):
     return dict(reversed(sorted(d.items(), key=lambda item: item[1])))
 
 def read_language(language, word_length = 5):
-    filename = f'data/{language.lower()}-len{word_length}.txt'    
+    assert type(language)==str, f'language={language} is not a string'
+    filename = f'data/{language.lower()}-len{word_length}.txt'
+    assert os.path.exists(filename), f'File {filename} does not exist'
     myfile = open(filename, 'r')
     words = [ list(str.strip(line)) for line in myfile.readlines() ]
     myfile.close() 
@@ -70,9 +73,9 @@ def process(word_length, words, not_contains_letters = list(), letter_at_pos = [
     not_contains_letters = [letter.upper() for letter in not_contains_letters]
     letter_at_pos = [letter.upper() if letter is not None else None for letter in letter_at_pos ]
     letters_not_at_pos = [[letter.upper() for letter in letters] for letters in letters_not_at_pos ]
-    assert len(letter_at_pos)==word_length
-    assert len(letters_not_at_pos)==word_length
-    assert type(must_contain)==list
+    assert len(letter_at_pos)==word_length, f'letter_at_pos={letter_at_pos} is not of length {word_length}'
+    assert len(letters_not_at_pos)==word_length, f'letters_not_at_pos={letters_not_at_pos} is not of length {word_length}'
+    assert type(must_contain)==list, f'must_contain={must_contain} is not a list'
     contains_letters = list(set([letter for letter in letter_at_pos if letter is not None] + [ letter for letters in letters_not_at_pos for letter in letters ] + must_contain))
 
     def print_info(words):
@@ -146,7 +149,8 @@ def complement_words(word_length, words, not_contains_letters, letter_at_pos, le
 
 def wordle():
     # https://www.powerlanguage.co.uk/wordle/
-    process('EN', 5,
+    all_words = read_language(language='en', word_length=5)
+    process(words=all_words, word_length=5,
         not_contains_letters=[],
         letter_at_pos = [None,None,None,None,None],
         letters_not_at_pos = [[],[],[],[],[]]
@@ -154,17 +158,18 @@ def wordle():
 
 def ordla(lang='IS',word_length=5): 
     # https://torfbaer.itch.io/ordla?secret=tAAEeMtlFSHv4FJo8eTn6cfyd2M
-    process(lang,word_length,
-        not_contains_letters=[],
+    all_words = read_language(language='is', word_length=5)
+    process(words=all_words, word_length=5,
+            not_contains_letters=[],
         letter_at_pos = [None,None,None,None,None],
         letters_not_at_pos = [[],[],[],[],[]]
     )
 
 def absurdle(lang='EN', word_length=5, max_show=25):
     # https://qntm.org/files/wordle/index.html
-    not_contains_letters=['A','R','O','S','U','T','N','C']
-    letter_at_pos = ['W',None,'I','L','E']
-    letters_not_at_pos = [[],['E'],[],[],['H']]
+    not_contains_letters = []
+    letter_at_pos = [None,None,None,None,None]
+    letters_not_at_pos = [[],[],[],[],[]]
     all_words = read_language(lang, word_length)
     words, freq_overall, freq_positional = process(word_length, all_words, not_contains_letters, letter_at_pos, letters_not_at_pos, max_show, print_out=True)
     candidates = complement_words(word_length, glance(words,15), not_contains_letters, letter_at_pos, letters_not_at_pos)
@@ -188,4 +193,5 @@ def absurdle(lang='EN', word_length=5, max_show=25):
     words = glance(words,10)
     print('\n'.join([f'{color_word(word, letter_at_pos, unknowns)}: {value}' for word,value in words.items()]))
             
-absurdle()
+wordle()
+ordla()
